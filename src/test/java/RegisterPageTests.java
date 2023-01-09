@@ -68,7 +68,8 @@ public class RegisterPageTests {
 
         registerPage.register(name, email, password);
 
-        Thread.sleep(1000);
+        loginPage.waitForLoadPage(3);
+
         loginPage.login(email, password);
 
         Assert.assertTrue(mainPage.isOrderButtonDisplayed());
@@ -81,13 +82,18 @@ public class RegisterPageTests {
     @DisplayName("Ошибка для некорректного пароля")
     @Description("Минимальный пароль — шесть символов")
     public void negativeUserRegistration() {
+        password = RandomStringUtils.randomAlphanumeric(5);
+
         mainPage.clickLoginButton();
 
         loginPage.clickRegistrationButton();
 
-        registerPage.register(name, email, "FAKE!");
+        registerPage.register(name, email, password);
 
         Assert.assertEquals("Некорректный пароль", registerPage.getErrorText());
+
+        //get token api
+        token = usersApi.loginUserResponse(new UsersApi(email, password, name)).extract().jsonPath().getString("accessToken");
     }
 
     @After
