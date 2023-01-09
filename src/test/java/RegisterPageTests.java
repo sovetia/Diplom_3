@@ -1,3 +1,4 @@
+import api.UsersApi;
 import io.qameta.allure.Description;
 import io.qameta.allure.junit4.DisplayName;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -15,7 +16,7 @@ import pom.RegisterPage;
 
 import java.util.concurrent.TimeUnit;
 
-import static constants.Constants.*;
+import static constants.Constants.BASE_URL;
 
 @RunWith(Parameterized.class)
 public class RegisterPageTests {
@@ -25,6 +26,9 @@ public class RegisterPageTests {
     private LoginPage loginPage;
     private RegisterPage registerPage;
     private String name, email, password;
+    private String token;
+
+    private UsersApi usersApi = new UsersApi();
 
     public RegisterPageTests(String driverName) {
         this.driverName = driverName;
@@ -68,6 +72,9 @@ public class RegisterPageTests {
         loginPage.login(email, password);
 
         Assert.assertTrue(mainPage.isOrderButtonDisplayed());
+
+        //get token api
+        token = usersApi.loginUserResponse(new UsersApi(email, password, name)).extract().jsonPath().getString("accessToken");
     }
 
     @Test
@@ -86,5 +93,7 @@ public class RegisterPageTests {
     @After
     public void tearDown() {
         driver.quit();
+        if (token != null)
+            usersApi.deleteUser(token);
     }
 }

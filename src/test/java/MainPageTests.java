@@ -1,4 +1,7 @@
+import api.UsersApi;
 import io.qameta.allure.junit4.DisplayName;
+import io.restassured.response.ValidatableResponse;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -22,9 +25,15 @@ public class MainPageTests {
     private MainPage mainPage;
     private LoginPage loginPage;
     private ProfilePage profilePage;
+    private UsersApi usersApi = new UsersApi();
+    private String name, email, password;
+    private String token;
 
     public MainPageTests(String driverName){
         this.driverName = driverName;
+        name = RandomStringUtils.randomAlphanumeric(6);
+        email = RandomStringUtils.randomAlphanumeric(6) + "@yandex.ru";
+        password = RandomStringUtils.randomAlphanumeric(6);
     }
 
     @Parameterized.Parameters(name = "{0}")
@@ -43,12 +52,16 @@ public class MainPageTests {
         driver.manage().timeouts().implicitlyWait(3, TimeUnit.SECONDS);
         driver.get(BASE_URL);
 
+        //register random user api
+        ValidatableResponse registerUserResponse = usersApi.registerUserResponse(new UsersApi(email, password, name));
+        token = registerUserResponse.extract().jsonPath().getString("accessToken");
+
         mainPage = new MainPage(driver);
         loginPage = new LoginPage(driver);
         profilePage = new ProfilePage(driver);
 
         mainPage.clickLoginButton();
-        loginPage.login(USER_EMAIL, USER_PASSWORD);
+        loginPage.login(email, password);
     }
 
     @Test
@@ -81,27 +94,34 @@ public class MainPageTests {
     @DisplayName("Переход к разделу «Булки»")
     public void navigateConstructorBunsTab() throws InterruptedException {
         mainPage.clickSaucesTab();
-        Thread.sleep(1000);
         mainPage.clickBunsTab();
-        Assert.assertTrue(mainPage.isBunsDisplayed());
+
+        String expected = "Булки";
+        String actual = mainPage.checkTextSelectIngredient();
+        Assert.assertEquals(expected, actual);
     }
 
     @Test
     @DisplayName("Переход к разделу «Соусы»")
     public void navigateConstructorSaucesTab() {
         mainPage.clickSaucesTab();
-        Assert.assertTrue(mainPage.isSaucesDisplayed());
-    }
+
+        String expected = "Соусы";
+        String actual = mainPage.checkTextSelectIngredient();
+        Assert.assertEquals(expected, actual);    }
 
     @Test
     @DisplayName("Переход к разделу «Начинки»")
     public void navigateConstructorFillingTab() {
         mainPage.clickFillingTab();
-        Assert.assertTrue(mainPage.isFillingDisplayed());
-    }
+
+        String expected = "Начинки";
+        String actual = mainPage.checkTextSelectIngredient();
+        Assert.assertEquals(expected, actual);    }
 
     @After
     public void tearDown() {
         driver.quit();
+        usersApi.deleteUser(token);
     }
 }

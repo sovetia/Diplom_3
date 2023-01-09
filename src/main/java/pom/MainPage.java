@@ -18,18 +18,16 @@ public class MainPage {
     private By logoButton = By.xpath("//*[@class = 'AppHeader_header__logo__2D0X2']");
     //Кнопка "Конструктор"
     private By constructorButton = By.xpath("//*[text()='Конструктор']");
-    //Заголовок "Булки"
-    private By headingBuns = By.xpath("//h2[text() = 'Булки']");
-    //Заголовок "Соусы"
-    private By headingSauces = By.xpath("//h2[text() = 'Соусы']");
-    //Заголовок "Начинки"
-    private By headingFilling = By.xpath("//h2[text() = 'Булки']	");
+
     //Вкладка "Булки"
     private By tabBuns = By.xpath("//span[text() = 'Булки']");
     //Вкладка "Соусы"
     private By tabSauces = By.xpath("//span[text() = 'Соусы']");
     //Вкладка "Начинки"
     private By tabFilling = By.xpath("//span[text() = 'Начинки']");
+
+    // Локатор выделенной вкладки
+    private By tabSelectIngredient = By.cssSelector(".tab_tab_type_current__2BEPc");
 
     public MainPage(WebDriver driver) {
         this.driver = driver;
@@ -55,19 +53,9 @@ public class MainPage {
         driver.findElement(constructorButton).click();
     }
 
-    @Step("Check Buns heading is displayed")
-    public boolean isBunsDisplayed() {
-        return driver.findElement(headingBuns).isDisplayed();
-    }
-
-    @Step("Check Sauces heading is displayed")
-    public boolean isSaucesDisplayed() {
-        return driver.findElement(headingSauces).isDisplayed();
-    }
-
-    @Step("Check Filling heading is displayed")
-    public boolean isFillingDisplayed() {
-        return driver.findElement(headingFilling).isDisplayed();
+    @Step("Check if order button is displayed")
+    public boolean isOrderButtonDisplayed() {
+        return driver.findElement(orderButton).isDisplayed();
     }
 
     @Step("Click Buns tab")
@@ -80,13 +68,14 @@ public class MainPage {
         driver.findElement(tabSauces).click();
     }
 
-    @Step("Check if order button is displayed")
-    public boolean isOrderButtonDisplayed() {
-        return driver.findElement(orderButton).isDisplayed();
-    }
-
     @Step("Click Filling tab")
     public void clickFillingTab() {
         driver.findElement(tabFilling).click();
+    }
+
+    // Проверка текста выделенной вкладки
+    @Step("Check text select ingredient tab")
+    public String checkTextSelectIngredient() {
+        return driver.findElement(tabSelectIngredient).getText();
     }
 }

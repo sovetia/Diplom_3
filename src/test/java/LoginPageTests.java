@@ -1,4 +1,7 @@
+import api.UsersApi;
 import io.qameta.allure.junit4.DisplayName;
+import io.restassured.response.ValidatableResponse;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -28,9 +31,15 @@ public class LoginPageTests {
     private ForgotPasswordPage forgotPasswordPage;
 
     private ProfilePage profilePage;
+    private UsersApi usersApi = new UsersApi();
+    private String name, email, password;
+    private String token;
 
     public LoginPageTests(String driverName){
         this.driverName = driverName;
+        name = RandomStringUtils.randomAlphanumeric(6);
+        email = RandomStringUtils.randomAlphanumeric(6) + "@yandex.ru";
+        password = RandomStringUtils.randomAlphanumeric(6);
     }
 
     @Parameterized.Parameters(name = "{0}")
@@ -50,6 +59,10 @@ public class LoginPageTests {
         driver.manage().timeouts().implicitlyWait(3, TimeUnit.SECONDS);
         driver.get(BASE_URL);
 
+        //register random user api
+        ValidatableResponse registerUserResponse = usersApi.registerUserResponse(new UsersApi(email, password, name));
+        token = registerUserResponse.extract().jsonPath().getString("accessToken");
+
         mainPage = new MainPage(driver);
         loginPage = new LoginPage(driver);
         registerPage = new RegisterPage(driver);
@@ -62,7 +75,7 @@ public class LoginPageTests {
     @DisplayName("Вход по кнопке «Войти в аккаунт» на главной")
     public void loginViaHomePage() {
         mainPage.clickLoginButton();
-        loginPage.login(USER_EMAIL, USER_PASSWORD);
+        loginPage.login(email, password);
 
         Assert.assertTrue(mainPage.isOrderButtonDisplayed());
     }
@@ -71,7 +84,7 @@ public class LoginPageTests {
     @DisplayName("Вход через кнопку «Личный кабинет»")
     public void loginViaProfilePage() {
         mainPage.clickProfileButton();
-        loginPage.login(USER_EMAIL, USER_PASSWORD);
+        loginPage.login(email, password);
         Assert.assertTrue(mainPage.isOrderButtonDisplayed());
     }
 
@@ -81,7 +94,7 @@ public class LoginPageTests {
         mainPage.clickLoginButton();
         loginPage.clickRegistrationButton();
         registerPage.clickLoginButton();
-        loginPage.login(USER_EMAIL, USER_PASSWORD);
+        loginPage.login(email, password);
 
         Assert.assertTrue(mainPage.isOrderButtonDisplayed());
     }
@@ -92,7 +105,7 @@ public class LoginPageTests {
         mainPage.clickLoginButton();
         loginPage.clickPwRecoveryButton();
         forgotPasswordPage.clickLoginButton();
-        loginPage.login(USER_EMAIL, USER_PASSWORD);
+        loginPage.login(email, password);
 
         Assert.assertTrue(mainPage.isOrderButtonDisplayed());
     }
@@ -101,7 +114,7 @@ public class LoginPageTests {
     @DisplayName("Выход по кнопке «Выйти» в личном кабинете»,")
     public void logoutViaProfilePage() {
         mainPage.clickProfileButton();
-        loginPage.login(USER_EMAIL, USER_PASSWORD);
+        loginPage.login(email, password);
         mainPage.clickProfileButton();
         profilePage.clickLogoutButton();
 
@@ -111,5 +124,6 @@ public class LoginPageTests {
     @After
     public void tearDown() {
         driver.quit();
+        usersApi.deleteUser(token);
     }
 }
