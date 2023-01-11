@@ -90,7 +90,7 @@ public class RegisterPageTests {
 
         registerPage.register(name, email, password);
 
-        Assert.assertEquals("Некорректный пароль", registerPage.getErrorText());
+        Assert.assertEquals("Ошибка! Пользователь создан","Некорректный пароль", registerPage.getErrorText());
 
         //get token api
         token = usersApi.loginUserResponse(new UsersApi(email, password, name)).extract().jsonPath().getString("accessToken");

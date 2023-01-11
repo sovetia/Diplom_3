@@ -25,7 +25,12 @@ public class RegisterPage {
 
     @Step("Get error text")
     public String getErrorText() {
-        return driver.findElement(errorLocator).getText();
+        try {
+            return driver.findElement(errorLocator).getText();
+        }
+        catch (Exception e) {
+            return null;
+        }
     }
 
     @Step("User registration")
